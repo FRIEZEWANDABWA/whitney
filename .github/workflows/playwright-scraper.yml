@@ -1,0 +1,63 @@
+name: Playwright Browser Scraper
+
+on:
+  schedule:
+    - cron: '30 */2 * * *'  # Every 2 hours at :30 (offset from main ingest at :00)
+  workflow_dispatch:         # Manual trigger from GitHub UI
+
+concurrency:
+  group: playwright-scraper
+  cancel-in-progress: false  # Never cancel a running scrape
+
+jobs:
+  playwright-scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45      # Enough for all browser sources
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scripts/package.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-v1
+
+      - name: Install scraper dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: scripts
+        run: npx playwright install chromium --with-deps
+
+      - name: Install Chromium system deps (if cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        working-directory: scripts
+        run: npx playwright install-deps chromium
+
+      - name: Run Playwright scraper
+        working-directory: scripts
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node playwright-scraper.mjs
+
+      - name: Upload run log as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-scraper-log-${{ github.run_number }}
+          path: scripts/*.log
+          if-no-files-found: ignore
+          retention-days: 7

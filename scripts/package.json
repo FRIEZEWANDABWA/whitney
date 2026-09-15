@@ -1,0 +1,11 @@
+{
+  "name": "playwright-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Playwright-based browser scraper for JS-heavy job sites",
+  "dependencies": {
+    "@playwright/test": "^1.44.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "cheerio": "^1.0.0"
+  }
+}

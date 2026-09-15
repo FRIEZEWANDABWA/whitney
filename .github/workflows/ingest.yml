@@ -1,0 +1,20 @@
+name: Ingest Orchestrator
+on:
+  schedule:
+    - cron: '0 * * * *' # Run exactly at the top of every hour
+  workflow_dispatch:
+
+concurrency:
+  group: ingest-worker
+  cancel-in-progress: false
+
+jobs:
+  run-ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Job Ingestion (Enqueue Sources)
+        run: |
+          curl -f -s -S -L -X POST ${{ secrets.PRODUCTION_URL }}/api/cron/ingest \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json" \
+          -d '{"force": false}'

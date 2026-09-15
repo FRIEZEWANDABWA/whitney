@@ -1,0 +1,18 @@
+name: AI Match Engine
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Run every 15 minutes
+  workflow_dispatch:
+
+concurrency:
+  group: match-worker
+  cancel-in-progress: false
+
+jobs:
+  run-match:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger AI Matching
+        run: |
+          curl -f -s -S -L -X POST ${{ secrets.PRODUCTION_URL }}/api/cron/match \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
