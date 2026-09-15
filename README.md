@@ -1,4 +1,4 @@
-# EntryJobs KE — AI Entry-Level Job Intelligence System (Kenya)
+# EntryJobs KE — AI Entry-Level Job Intelligence System (Kenya)..
 
 Scrapes Kenyan job boards, NGO/UN/bank career pages and recruitment agencies for
 **internships, graduate trainee programmes, apprenticeships/attachments, and any
